@@ -1,0 +1,883 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CSV Duplikate bereinigen</title>
+
+<style>
+:root{
+    --bg:#07131b;
+    --panel:#0d202b;
+    --panel2:#102a37;
+    --text:#eef8fb;
+    --muted:#9fb7c1;
+    --accent:#22d3c5;
+    --accent2:#13b8ac;
+    --ok:#43df8b;
+    --warn:#ffcf5a;
+    --danger:#ff6b6b;
+    --line:#20404d;
+}
+
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    font-family:Inter,Segoe UI,Arial,sans-serif;
+    background:radial-gradient(circle at top,#123342 0,#07131b 45%);
+    color:var(--text);
+    min-height:100vh;
+}
+
+.wrap{
+    max-width:1000px;
+    margin:auto;
+    padding:48px 22px 70px;
+}
+
+.hero{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.logo{
+    display:inline-flex;
+    width:58px;
+    height:58px;
+    border-radius:16px;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg,var(--accent),#5eead4);
+    color:#052027;
+    font-size:31px;
+    font-weight:900;
+    box-shadow:0 10px 35px #22d3c533;
+}
+
+.hero h1{
+    margin:16px 0 8px;
+    font-size:clamp(30px,5vw,48px);
+}
+
+.hero p{
+    color:var(--muted);
+    margin:0;
+}
+
+.card{
+    background:linear-gradient(180deg,#0e2430,#0a1b24);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:24px;
+    box-shadow:0 18px 55px #0005;
+}
+
+.drop{
+    display:flex;
+    width:100%;
+    min-height:150px;
+    border:2px dashed #2c6470;
+    border-radius:16px;
+    padding:30px 24px;
+    text-align:center;
+    transition:.2s;
+    cursor:pointer;
+    background:#0b2029;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+}
+
+.drop.drag{
+    border-color:var(--accent);
+    background:#0d2b34;
+}
+
+.drop strong{
+    display:block;
+    font-size:19px;
+    margin-bottom:8px;
+}
+
+.drop span{
+    display:block;
+    color:var(--muted);
+}
+
+input[type=file]{
+    display:none;
+}
+
+.btn{
+    border:0;
+    border-radius:11px;
+    padding:12px 18px;
+    font-weight:800;
+    cursor:pointer;
+    background:var(--accent);
+    color:#062128;
+    font-size:14px;
+}
+
+.btn:hover{
+    background:#5eead4;
+}
+
+.btn.secondary{
+    background:#193846;
+    color:#d9f3f5;
+    border:1px solid #285262;
+}
+
+.btn:disabled{
+    opacity:.4;
+    cursor:not-allowed;
+}
+
+.actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+    margin-top:20px;
+}
+
+.files{
+    margin-top:24px;
+    display:grid;
+    gap:12px;
+}
+
+.file{
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:#0a1c25;
+    overflow:hidden;
+}
+
+.filetop{
+    display:grid;
+    grid-template-columns:1fr auto auto;
+    gap:14px;
+    align-items:center;
+    padding:15px 16px;
+}
+
+.fname{
+    font-weight:800;
+    word-break:break-all;
+}
+
+.meta{
+    font-size:13px;
+    color:var(--muted);
+    margin-top:4px;
+}
+
+.badge{
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:900;
+    white-space:nowrap;
+}
+
+.badge.ok{
+    background:#43df8b20;
+    color:var(--ok);
+}
+
+.badge.warn{
+    background:#ffcf5a20;
+    color:var(--warn);
+}
+
+.details{
+    display:none;
+    border-top:1px solid var(--line);
+    padding:13px 16px;
+    color:#cce0e6;
+    font-size:13px;
+    overflow:auto;
+}
+
+.details.open{
+    display:block;
+}
+
+.details table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:650px;
+}
+
+.details th,
+.details td{
+    text-align:left;
+    padding:7px;
+    border-bottom:1px solid #17343f;
+    white-space:nowrap;
+}
+
+.details th{
+    color:#8fc4cc;
+}
+
+.summary{
+    margin-top:22px;
+    padding:18px;
+    border-radius:14px;
+    background:#0a1d25;
+    border:1px solid var(--line);
+    display:none;
+}
+
+.summary.show{
+    display:block;
+}
+
+.summary strong{
+    color:var(--accent);
+}
+
+.next{
+    display:none;
+    border:2px solid #43df8b88;
+    background:linear-gradient(135deg,#0c2b27,#102a2a);
+    border-radius:18px;
+    padding:24px;
+}
+
+.next.show{
+    display:block;
+}
+
+.next h2{
+    color:var(--ok);
+    margin:0 0 20px;
+    font-size:23px;
+}
+
+.steps{
+    display:grid;
+    gap:14px;
+}
+
+.step{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    font-weight:800;
+    font-size:17px;
+}
+
+.num{
+    flex:0 0 30px;
+    height:30px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--ok);
+    color:#062117;
+    font-weight:900;
+}
+
+.small{
+    font-size:12px;
+    color:var(--muted);
+    margin:28px 0 0;
+    text-align:center;
+}
+
+.error{
+    color:var(--danger);
+}
+
+@media(max-width:650px){
+    .filetop{
+        grid-template-columns:1fr;
+    }
+
+    .wrap{
+        padding-top:28px;
+    }
+
+    .card{
+        padding:16px;
+    }
+
+    .drop{
+        padding:25px 14px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<main class="wrap">
+
+<section class="hero">
+    <div class="logo">✓</div>
+    <h1>Duplikate bereinigen</h1>
+    <p>
+        Lade hier die Files rein – aber nur die Files mit
+        <strong>Attribute, Artikelkategorien und Attributsgruppe</strong>
+    </p>
+</section>
+
+<section class="card">
+
+<label class="drop" id="drop" for="picker">
+    <strong>CSV-Dateien hier ablegen</strong>
+    <span>oder klicken und Dateien auswählen</span>
+
+    <input
+        id="picker"
+        type="file"
+        accept=".csv,text/csv"
+        multiple
+    >
+</label>
+
+<div class="actions">
+
+    <button
+        class="btn secondary"
+        id="clear"
+        disabled
+    >
+        Auswahl leeren
+    </button>
+
+    <button
+        class="btn"
+        id="clean"
+        disabled
+    >
+        Duplikate bereinigen
+    </button>
+
+</div>
+
+<div id="files" class="files"></div>
+
+<div id="summary" class="summary"></div>
+
+
+<!-- ABSCHLUSS -->
+
+<div id="next" class="next">
+
+    <h2>
+        ✓ Bereinigung abgeschlossen – jetzt unbedingt:
+    </h2>
+
+    <div class="steps">
+
+        <div class="step">
+            <div class="num">1</div>
+            <div>Die drei Files auf diesem Pfad löschen! \\srv102\Datenaustausch\Artikelimport</div>
+        </div>
+
+        <div class="step">
+            <div class="num">2</div>
+            <div>Neue Files unter Downloads herunterladen und hier speichern \\srv102\Datenaustausch\Artikelimport</div>
+        </div>
+
+        <div class="step">
+            <div class="num">3</div>
+            <div>Artikeldaten im SAP anreichern</div>
+        </div>
+
+    </div>
+
+</div>
+
+</section>
+
+</main>
+
+
+<script>
+
+const picker = document.getElementById('picker');
+const drop = document.getElementById('drop');
+const filesEl = document.getElementById('files');
+const cleanBtn = document.getElementById('clean');
+const clearBtn = document.getElementById('clear');
+const summary = document.getElementById('summary');
+const next = document.getElementById('next');
+
+let items = [];
+
+
+/* DRAG & DROP */
+
+['dragenter','dragover'].forEach(e =>
+    drop.addEventListener(e,x=>{
+        x.preventDefault();
+        drop.classList.add('drag');
+    })
+);
+
+['dragleave','drop'].forEach(e =>
+    drop.addEventListener(e,x=>{
+        x.preventDefault();
+        drop.classList.remove('drag');
+    })
+);
+
+
+drop.addEventListener('drop',e=>{
+    loadFiles([...e.dataTransfer.files]);
+});
+
+
+picker.addEventListener('change',()=>{
+    loadFiles([...picker.files]);
+});
+
+
+/* AUSWAHL LEEREN */
+
+clearBtn.onclick=()=>{
+
+    items=[];
+    picker.value='';
+
+    render();
+
+    summary.className='summary';
+    next.className='next';
+};
+
+
+/* CSV EINLESEN */
+
+function parseCSV(text){
+
+    const rows=[];
+
+    let row=[];
+    let cell='';
+    let q=false;
+
+    for(let i=0;i<text.length;i++){
+
+        let c=text[i];
+
+        if(q){
+
+            if(c==='"' && text[i+1]==='"'){
+                cell+='"';
+                i++;
+            }
+
+            else if(c==='"'){
+                q=false;
+            }
+
+            else{
+                cell+=c;
+            }
+
+        }
+
+        else{
+
+            if(c==='"'){
+                q=true;
+            }
+
+            else if(c===';'){
+                row.push(cell);
+                cell='';
+            }
+
+            else if(c==='\n'){
+                row.push(cell.replace(/\r$/,''));
+                rows.push(row);
+
+                row=[];
+                cell='';
+            }
+
+            else{
+                cell+=c;
+            }
+        }
+    }
+
+    if(cell.length || row.length){
+
+        row.push(cell.replace(/\r$/,''));
+        rows.push(row);
+    }
+
+    return rows.filter(
+        r=>!(r.length===1 && r[0]==='')
+    );
+}
+
+
+/* CSV ERSTELLEN */
+
+function csvCell(v){
+
+    v=String(v??'');
+
+    return /[;"\r\n]/.test(v)
+        ? '"'+v.replace(/"/g,'""')+'"'
+        : v;
+}
+
+
+function toCSV(rows){
+
+    return rows
+        .map(r=>r.map(csvCell).join(';'))
+        .join('\r\n')
+        +'\r\n';
+}
+
+
+function key(row){
+
+    return JSON.stringify(row);
+}
+
+
+/* DATEI DECODIEREN */
+
+async function decodeFile(f){
+
+    let buf=await f.arrayBuffer();
+    let u=new Uint8Array(buf);
+
+    let utf=new TextDecoder(
+        'utf-8',
+        {fatal:false}
+    ).decode(u);
+
+    let bad=(utf.match(/ /g)||[]).length;
+
+    if(bad){
+
+        try{
+            return new TextDecoder(
+                'windows-1252'
+            ).decode(u);
+        }
+
+        catch(e){}
+    }
+
+    return utf.replace(/^\uFEFF/,'');
+}
+
+
+/* FILES LADEN */
+
+async function loadFiles(fs){
+
+    for(
+        const f of fs.filter(
+            x=>x.name.toLowerCase().endsWith('.csv')
+        )
+    ){
+
+        let text=await decodeFile(f);
+        let rows=parseCSV(text);
+
+        if(!rows.length) continue;
+
+        let header=rows[0];
+        let data=rows.slice(1);
+
+        let seen=new Map();
+        let dups=[];
+
+        data.forEach((r,i)=>{
+
+            let k=key(r);
+
+            if(seen.has(k)){
+
+                dups.push({
+                    row:r,
+                    line:i+2,
+                    first:seen.get(k)+2
+                });
+
+            }
+
+            else{
+
+                seen.set(k,i);
+            }
+        });
+
+
+        items.push({
+            file:f,
+            header,
+            data,
+            dups,
+            cleaned:null
+        });
+    }
+
+    render();
+
+    summary.className='summary';
+    next.className='next';
+}
+
+
+/* HTML SICHER AUSGEBEN */
+
+function esc(s){
+
+    return String(s).replace(
+        /[&<>"']/g,
+        c=>({
+            '&':'&amp;',
+            '<':'&lt;',
+            '>':'&gt;',
+            '"':'&quot;',
+            "'":'&#39;'
+        }[c])
+    );
+}
+
+
+/* DATEIEN ANZEIGEN */
+
+function render(){
+
+    filesEl.innerHTML='';
+
+    items.forEach((it,idx)=>{
+
+        let d=it.dups.length;
+
+        let box=document.createElement('div');
+
+        box.className='file';
+
+        let status=d
+            ? `<span class="badge warn">${d} Duplikat${d===1?'':'e'}</span>`
+            : `<span class="badge ok">Keine Duplikate</span>`;
+
+
+        box.innerHTML=`
+
+        <div class="filetop">
+
+            <div>
+
+                <div class="fname">
+                    ${esc(it.file.name)}
+                </div>
+
+                <div class="meta">
+                    ${it.data.length} Datenzeilen ·
+                    ${it.header.length} Spalten
+                </div>
+
+            </div>
+
+            ${status}
+
+            <button
+                class="btn secondary"
+                data-detail="${idx}"
+                ${d?'':'disabled'}
+            >
+                Details
+            </button>
+
+        </div>
+
+        <div
+            class="details"
+            id="det${idx}"
+        >
+            ${detailTable(it)}
+        </div>
+        `;
+
+
+        filesEl.appendChild(box);
+    });
+
+
+    cleanBtn.disabled=!items.length;
+    clearBtn.disabled=!items.length;
+
+
+    document
+        .querySelectorAll('[data-detail]')
+        .forEach(b=>{
+
+            b.onclick=()=>{
+
+                document
+                    .getElementById('det'+b.dataset.detail)
+                    .classList.toggle('open');
+            };
+        });
+}
+
+
+/* DUPLIKATE ANZEIGEN */
+
+function detailTable(it){
+
+    if(!it.dups.length) return '';
+
+    let cols=it.header
+        .map(h=>`<th>${esc(h)}</th>`)
+        .join('');
+
+
+    let rows=it.dups
+        .slice(0,100)
+        .map(d=>
+            `<tr>${
+                d.row
+                    .map(v=>`<td>${esc(v)}</td>`)
+                    .join('')
+            }</tr>`
+        )
+        .join('');
+
+
+    return `
+
+    <div style="margin-bottom:8px">
+
+        <b>Doppelte Datensätze:</b>
+
+        Die erste identische Zeile bleibt erhalten.
+
+    </div>
+
+    <table>
+
+        <thead>
+            <tr>${cols}</tr>
+        </thead>
+
+        <tbody>
+            ${rows}
+        </tbody>
+
+    </table>
+
+    ${
+        it.dups.length>100
+        ? '<p>Es werden die ersten 100 Duplikate angezeigt.</p>'
+        : ''
+    }
+
+    `;
+}
+
+
+/* BEREINIGEN */
+
+cleanBtn.onclick=()=>{
+
+    items.forEach(it=>{
+
+        let seen=new Set();
+        let out=[];
+
+
+        for(const r of it.data){
+
+            let k=key(r);
+
+            if(seen.has(k)){
+                continue;
+            }
+
+            seen.add(k);
+            out.push(r);
+        }
+
+
+        it.cleaned=[
+            it.header,
+            ...out
+        ];
+
+
+        download(it);
+    });
+
+
+    /* ALLES OBEN AUSBLENDEN */
+
+    document.querySelector('.hero').style.display='none';
+
+    drop.style.display='none';
+
+    document.querySelector('.actions').style.display='none';
+
+    filesEl.style.display='none';
+
+    summary.style.display='none';
+
+    document.querySelector('.small').style.display='none';
+
+
+    /* NUR NOCH ABSCHLUSS ANZEIGEN */
+
+    next.className='next show';
+};
+
+
+/* DATEI HERUNTERLADEN */
+
+function download(it){
+
+    let blob=new Blob(
+        [toCSV(it.cleaned)],
+        {
+            type:'text/csv;charset=utf-8'
+        }
+    );
+
+
+    let url=URL.createObjectURL(blob);
+
+    let a=document.createElement('a');
+
+    a.href=url;
+
+    /* GLEICHER DATEINAME */
+    a.download=it.file.name;
+
+
+    document.body.appendChild(a);
+
+    a.click();
+
+    a.remove();
+
+
+    setTimeout(
+        ()=>URL.revokeObjectURL(url),
+        1500
+    );
+}
+
+</script>
+
+</body>
+</html>
