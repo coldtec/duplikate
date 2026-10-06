@@ -797,7 +797,6 @@ cleanBtn.onclick=()=>{
         let seen=new Set();
         let out=[];
 
-
         for(const r of it.data){
 
             let k=key(r);
@@ -810,15 +809,52 @@ cleanBtn.onclick=()=>{
             out.push(r);
         }
 
-
         it.cleaned=[
             it.header,
             ...out
         ];
 
-
         download(it);
     });
+
+
+    /* OBEREN BEREICH ENTFERNEN */
+
+    document.querySelector('.hero').style.display='none';
+
+
+    /* CARD KOMPLETT DURCH ABSCHLUSS ERSETZEN */
+
+    document.querySelector('.card').innerHTML=`
+
+        <div class="next show">
+
+            <h2>
+                ✓ Bereinigung abgeschlossen – jetzt unbedingt:
+            </h2>
+
+            <div class="steps">
+
+                <div class="step">
+                    <div class="num">1</div>
+                    <div>Files auf Pfad löschen</div>
+                </div>
+
+                <div class="step">
+                    <div class="num">2</div>
+                    <div>Neue Files herunterladen und dort speichern</div>
+                </div>
+
+                <div class="step">
+                    <div class="num">3</div>
+                    <div>Artikeldaten anreichern</div>
+                </div>
+
+            </div>
+
+        </div>
+    `;
+};
 
 
     /* ALLES OBEN AUSBLENDEN */
