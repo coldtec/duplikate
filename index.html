@@ -295,6 +295,25 @@ input[type=file]{
     color:var(--danger);
 }
 
+
+.help-wrap{text-align:center;margin:18px 0 22px}
+
+.help-btn{
+    background:#ffe082;
+    color:#332700;
+    border:1px solid #f2c94c;
+}
+
+.help-btn:hover{
+    background:#ffea9e;
+}
+
+.modal{display:none;position:fixed;inset:0;background:#000a;z-index:1000;padding:20px;align-items:center;justify-content:center}
+.modal.show{display:flex}
+.modalbox{width:min(680px,100%);max-height:90vh;overflow:auto;background:linear-gradient(180deg,#0e2430,#0a1b24);border:1px solid var(--line);border-radius:20px;padding:26px;box-shadow:0 24px 80px #0009;position:relative}
+.modalbox h2{margin:0 40px 22px 0;color:var(--accent);font-size:26px}
+.close{position:absolute;right:18px;top:16px;border:0;background:transparent;color:var(--muted);font-size:30px;cursor:pointer;line-height:1}
+.guide{display:grid;gap:18px}.guide-step{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start}.guide-num{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--accent);color:#062128;font-weight:900}.guide-step h3{margin:3px 0 6px;font-size:17px}.guide-step p{margin:0;color:#cce0e6;line-height:1.55}.pathbox{margin-top:9px;padding:11px 13px;border-radius:10px;background:#071820;border:1px solid #285262;color:#e9fbfc;font-family:Consolas,monospace;word-break:break-all}.filelist{margin-top:7px;color:#e9fbfc;line-height:1.7}
 @media(max-width:650px){
     .filetop{
         grid-template-columns:1fr;
@@ -327,6 +346,8 @@ input[type=file]{
         <strong>Attribute, Artikelkategorien und Attributsgruppe</strong>
     </p>
 </section>
+
+<div class="help-wrap"><button class="btn help-btn" id="helpBtn" type="button">Was muss ich tun?</button></div>
 
 <section class="card">
 
@@ -398,6 +419,20 @@ input[type=file]{
 
 </section>
 
+<div class="modal" id="helpModal" aria-hidden="true">
+  <div class="modalbox" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <button class="close" id="helpClose" type="button" aria-label="Schliessen">×</button>
+    <h2 id="helpTitle">So funktioniert's</h2>
+    <div class="guide">
+      <div class="guide-step"><div class="guide-num">1</div><div><h3>Dateien holen</h3><p>Öffne den Explorer und gib oben diesen Pfad ein:</p><div class="pathbox">\\srv102\Datenaustausch\Artikelimport</div></div></div>
+      <div class="guide-step"><div class="guide-num">2</div><div><h3>Diese drei Dateien hier hochladen</h3><div class="filelist">_Attribute.csv<br>_Artikelkategorien.csv<br>_Attributsgruppe.csv</div></div></div>
+      <div class="guide-step"><div class="guide-num">3</div><div><h3>Duplikate prüfen</h3><p>Nach dem Hochladen siehst du sofort, ob eine Datei doppelte Werte hat.</p></div></div>
+      <div class="guide-step"><div class="guide-num">4</div><div><h3>Bereinigen</h3><p>Klicke auf <strong>„Duplikate bereinigen“</strong>. Die bereinigten Dateien werden automatisch heruntergeladen.<br><strong>(Evtl. kommt eine Meldung – dort auf „Zulassen“ klicken.)</strong></p></div></div>
+      <div class="guide-step"><div class="guide-num">5</div><div><h3>Dateien ersetzen</h3><p>Die neuen Dateien findest du in deinem <strong>Downloads-Ordner</strong>. Ersetze die falschen Dateien durch die neuen unter:</p><div class="pathbox">\\srv102\Datenaustausch\Artikelimport</div><p style="margin-top:9px">Danach sollte der Import wieder funktionieren.</p></div></div>
+    </div>
+  </div>
+</div>
+
 </main>
 
 
@@ -410,6 +445,14 @@ const cleanBtn = document.getElementById('clean');
 const clearBtn = document.getElementById('clear');
 const summary = document.getElementById('summary');
 const next = document.getElementById('next');
+const helpBtn = document.getElementById('helpBtn');
+const helpModal = document.getElementById('helpModal');
+const helpClose = document.getElementById('helpClose');
+
+helpBtn.onclick=()=>{helpModal.classList.add('show');helpModal.setAttribute('aria-hidden','false')};
+helpClose.onclick=()=>{helpModal.classList.remove('show');helpModal.setAttribute('aria-hidden','true')};
+helpModal.addEventListener('click',e=>{if(e.target===helpModal)helpClose.click()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&helpModal.classList.contains('show'))helpClose.click()});
 
 let items = [];
 
